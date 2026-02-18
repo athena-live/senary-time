@@ -399,7 +399,12 @@
               <option value="beep">Beep</option>
               <option value="bell">Bell</option>
             </select>
-            <span class="muted-label">Every second</span>
+            <select id="sound-seconds-interval" aria-label="Seconds interval">
+              <option value="1">Every 1</option>
+              <option value="2">Every 2</option>
+              <option value="3">Every 3</option>
+              <option value="6">Every 6</option>
+            </select>
           </div>
           <div class="sound-row">
             <label>
@@ -412,7 +417,12 @@
               <option value="tick">Tick</option>
               <option value="chime">Chime</option>
             </select>
-            <span class="muted-label">Every minute</span>
+            <select id="sound-minutes-interval" aria-label="Minutes interval">
+              <option value="1">Every 1</option>
+              <option value="2">Every 2</option>
+              <option value="3">Every 3</option>
+              <option value="6">Every 6</option>
+            </select>
           </div>
           <div class="sound-row">
             <label>
@@ -425,7 +435,12 @@
               <option value="beep">Beep</option>
               <option value="tick">Tick</option>
             </select>
-            <span class="muted-label">Every hour</span>
+            <select id="sound-hours-interval" aria-label="Hours interval">
+              <option value="1">Every 1</option>
+              <option value="2">Every 2</option>
+              <option value="3">Every 3</option>
+              <option value="6">Every 6</option>
+            </select>
           </div>
         </div>
       </div>
@@ -485,6 +500,9 @@
       const secondsTone = document.getElementById("sound-seconds-tone");
       const minutesTone = document.getElementById("sound-minutes-tone");
       const hoursTone = document.getElementById("sound-hours-tone");
+      const secondsInterval = document.getElementById("sound-seconds-interval");
+      const minutesInterval = document.getElementById("sound-minutes-interval");
+      const hoursInterval = document.getElementById("sound-hours-interval");
 
       const toBase6 = (value, width) => {
         const base6 = value.toString(6);
@@ -566,9 +584,9 @@
       };
 
       const soundState = {
-        seconds: { type: secondsTone.value, synth: null },
-        minutes: { type: minutesTone.value, synth: null },
-        hours: { type: hoursTone.value, synth: null },
+        seconds: { type: secondsTone.value, synth: null, interval: Number(secondsInterval.value) },
+        minutes: { type: minutesTone.value, synth: null, interval: Number(minutesInterval.value) },
+        hours: { type: hoursTone.value, synth: null, interval: Number(hoursInterval.value) },
       };
 
       const buildSynth = (type) => {
@@ -584,9 +602,17 @@
         soundState[channel].synth = buildSynth(type);
       };
 
+      const setSoundInterval = (channel, value) => {
+        const interval = Number(value);
+        soundState[channel].interval = Number.isFinite(interval) && interval > 0 ? interval : 1;
+      };
+
       setSoundType("seconds", secondsTone.value);
       setSoundType("minutes", minutesTone.value);
       setSoundType("hours", hoursTone.value);
+      setSoundInterval("seconds", secondsInterval.value);
+      setSoundInterval("minutes", minutesInterval.value);
+      setSoundInterval("hours", hoursInterval.value);
 
       let lastHourAngle = 0;
       let lastMinuteAngle = 0;
@@ -658,19 +684,31 @@
           return;
         }
 
-        if (seconds !== lastSecondsValue && secondsToggle.checked) {
+        if (
+          seconds !== lastSecondsValue &&
+          secondsToggle.checked &&
+          seconds % soundState.seconds.interval === 0
+        ) {
           soundState.seconds.synth.triggerAttackRelease(
             SOUND_NOTES.seconds,
             SOUND_DURATIONS.seconds
           );
         }
-        if (minutes !== lastMinutesValue && minutesToggle.checked) {
+        if (
+          minutes !== lastMinutesValue &&
+          minutesToggle.checked &&
+          minutes % soundState.minutes.interval === 0
+        ) {
           soundState.minutes.synth.triggerAttackRelease(
             SOUND_NOTES.minutes,
             SOUND_DURATIONS.minutes
           );
         }
-        if (hours !== lastHoursValue && hoursToggle.checked) {
+        if (
+          hours !== lastHoursValue &&
+          hoursToggle.checked &&
+          hours % soundState.hours.interval === 0
+        ) {
           soundState.hours.synth.triggerAttackRelease(SOUND_NOTES.hours, SOUND_DURATIONS.hours);
         }
 
@@ -710,6 +748,16 @@
       hoursTone.addEventListener("change", (event) => {
         setSoundType("hours", event.target.value);
         ensureAudioStarted();
+      });
+
+      secondsInterval.addEventListener("change", (event) => {
+        setSoundInterval("seconds", event.target.value);
+      });
+      minutesInterval.addEventListener("change", (event) => {
+        setSoundInterval("minutes", event.target.value);
+      });
+      hoursInterval.addEventListener("change", (event) => {
+        setSoundInterval("hours", event.target.value);
       });
 
       updateTime();
