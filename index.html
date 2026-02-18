@@ -221,6 +221,24 @@
         color: var(--muted);
       }
 
+      .footer {
+        margin-top: 18px;
+        font-size: 12px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .footer a {
+        color: inherit;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .footer a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
       .dot {
         display: inline-block;
         width: 10px;
@@ -312,6 +330,30 @@
         gap: 10px;
       }
 
+      .sound-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .sound-toggle {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .sound-toggle:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
       .sound-panel h2 {
         margin: 0;
         font-size: 12px;
@@ -370,6 +412,10 @@
         height: 16px;
       }
 
+      .sound-panel.collapsed .sound-options {
+        display: none;
+      }
+
       .dial {
         margin: 0 auto;
       }
@@ -386,7 +432,18 @@
         <button type="button" data-theme="gray">Gray</button>
       </div>
       <div class="sound-panel">
-        <h2>Sound</h2>
+        <div class="sound-header">
+          <h2>Sound</h2>
+          <button
+            type="button"
+            id="sound-toggle"
+            class="sound-toggle"
+            aria-expanded="true"
+            aria-label="Collapse sound menu"
+          >
+            −
+          </button>
+        </div>
         <div class="sound-options">
           <div class="sound-row">
             <label>
@@ -486,6 +543,9 @@
         <span><span class="dot accent"></span>HHHH (0000–1000, base‑6)</span>
         <span><span class="dot accent-2"></span>MM (00–55) / SS (00–55)</span>
       </div>
+      <footer class="footer">
+        Copyright <a href="https://athena.live">athena.live</a>
+      </footer>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.58/Tone.js"></script>
@@ -506,6 +566,8 @@
       const secondsInterval = document.getElementById("sound-seconds-interval");
       const minutesInterval = document.getElementById("sound-minutes-interval");
       const hoursInterval = document.getElementById("sound-hours-interval");
+      const soundPanel = document.querySelector(".sound-panel");
+      const soundToggle = document.getElementById("sound-toggle");
 
       const toBase6 = (value, width) => {
         const base6 = value.toString(6);
@@ -730,6 +792,13 @@
 
       themeButtons.forEach((button) => {
         button.addEventListener("click", () => setTheme(button.dataset.theme));
+      });
+
+      soundToggle.addEventListener("click", () => {
+        const isCollapsed = soundPanel.classList.toggle("collapsed");
+        soundToggle.setAttribute("aria-expanded", String(!isCollapsed));
+        soundToggle.setAttribute("aria-label", isCollapsed ? "Expand sound menu" : "Collapse sound menu");
+        soundToggle.textContent = isCollapsed ? "+" : "−";
       });
 
       [secondsToggle, minutesToggle, hoursToggle].forEach((toggle) => {
