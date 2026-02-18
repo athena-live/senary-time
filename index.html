@@ -442,6 +442,109 @@
         display: none;
       }
 
+      .work-panel {
+        margin: 14px 0 10px 0;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        background: rgba(255, 255, 255, 0.04);
+        display: grid;
+        gap: 10px;
+      }
+
+      .work-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .work-panel h2 {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+      }
+
+      .work-toggle {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .work-toggle:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .work-inputs {
+        display: grid;
+        gap: 10px;
+      }
+
+      .work-inputs input[type="text"] {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        padding: 8px 10px;
+        font-size: 14px;
+        letter-spacing: 0.4px;
+      }
+
+      .work-inputs button {
+        justify-self: start;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--button-text);
+        -webkit-text-fill-color: var(--button-text);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.6px;
+        cursor: pointer;
+      }
+
+      .work-panel.collapsed .work-inputs {
+        display: none;
+      }
+
+      .work-display {
+        margin: 18px 0 6px 0;
+        text-align: center;
+        padding: 10px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .work-display .text {
+        font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: clamp(20px, 6vw, 40px);
+        letter-spacing: 3px;
+        color: var(--accent);
+        animation: work-flash 1.2s ease-in-out infinite;
+      }
+
+      @keyframes work-flash {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
+
       .dial {
         margin: 0 auto;
       }
@@ -530,6 +633,24 @@
           </div>
         </div>
       </div>
+      <div class="work-panel">
+        <div class="work-header">
+          <h2>Working On</h2>
+          <button
+            type="button"
+            id="work-toggle"
+            class="work-toggle"
+            aria-expanded="true"
+            aria-label="Collapse work input"
+          >
+            −
+          </button>
+        </div>
+        <div class="work-inputs" id="work-inputs">
+          <input type="text" id="work-input" placeholder="What is being worked on?" />
+          <button type="button" id="work-apply">Apply</button>
+        </div>
+      </div>
       <div class="clock-wrap">
         <div class="dial" aria-hidden="true">
           <svg viewBox="0 0 200 200">
@@ -563,6 +684,9 @@
             <div class="label">Total Time In A Day</div>
             <div class="value" id="senary-total">1000:00:00</div>
           </div>
+        </div>
+        <div class="work-display" aria-live="polite">
+          <div class="text" id="work-text">READY</div>
         </div>
       </div>
       <div class="legend">
@@ -603,6 +727,11 @@
       const rollingDaysEl = document.getElementById("rolling-days");
       const rollingTotalEl = document.getElementById("rolling-total");
       const rollingProgressEl = document.getElementById("rolling-progress");
+      const workToggle = document.getElementById("work-toggle");
+      const workPanel = document.querySelector(".work-panel");
+      const workInput = document.getElementById("work-input");
+      const workApply = document.getElementById("work-apply");
+      const workText = document.getElementById("work-text");
 
       const toBase6 = (value, width) => {
         const base6 = value.toString(6);
@@ -850,6 +979,27 @@
         soundToggle.setAttribute("aria-expanded", String(!isCollapsed));
         soundToggle.setAttribute("aria-label", isCollapsed ? "Expand sound menu" : "Collapse sound menu");
         soundToggle.textContent = isCollapsed ? "+" : "−";
+      });
+
+      workToggle.addEventListener("click", () => {
+        const isCollapsed = workPanel.classList.toggle("collapsed");
+        workToggle.setAttribute("aria-expanded", String(!isCollapsed));
+        workToggle.setAttribute("aria-label", isCollapsed ? "Expand work input" : "Collapse work input");
+        workToggle.textContent = isCollapsed ? "+" : "−";
+      });
+
+      const applyWorkText = () => {
+        const value = workInput.value.trim();
+        if (value.length > 0) {
+          workText.textContent = value;
+        }
+      };
+
+      workApply.addEventListener("click", applyWorkText);
+      workInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          applyWorkText();
+        }
       });
 
       [secondsToggle, minutesToggle, hoursToggle].forEach((toggle) => {
