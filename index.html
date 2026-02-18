@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Senary Time</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;500&family=Space+Grotesk:wght@400;600&display=swap");
+
+      :root {
+        --bg: #0f1224;
+        --bg-2: #1a1f3a;
+        --accent: #f2c14e;
+        --accent-2: #5ddcff;
+        --text: #e7e9f7;
+        --muted: #a2a8c5;
+        --dial-edge: rgba(255, 255, 255, 0.12);
+        --dial-face: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.16), rgba(7, 9, 28, 0.9));
+        --tick: rgba(255, 255, 255, 0.25);
+        --tick-major: rgba(255, 255, 255, 0.5);
+        --second: #f36d6d;
+        --card-border: rgba(255, 255, 255, 0.1);
+        --card-fill: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+        --card-shadow: 0 20px 60px rgba(7, 10, 35, 0.6);
+        --button-text: #f1f3ff;
+        --button-active-text: #0b0f1f;
+      }
+
+      [data-theme="light"] {
+        --bg: #f7f5f0;
+        --bg-2: #e6e2d8;
+        --accent: #d99823;
+        --accent-2: #0f7b8a;
+        --text: #1b1f2a;
+        --muted: #60677a;
+        --dial-edge: rgba(0, 0, 0, 0.12);
+        --dial-face: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(230, 227, 218, 0.9));
+        --tick: rgba(0, 0, 0, 0.25);
+        --tick-major: rgba(0, 0, 0, 0.5);
+        --second: #b9433b;
+        --card-border: rgba(0, 0, 0, 0.08);
+        --card-fill: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+        --card-shadow: 0 18px 40px rgba(80, 80, 90, 0.2);
+        --button-text: #1b1f2a;
+        --button-active-text: #ffffff;
+      }
+
+      [data-theme="matrix"] {
+        --bg: #030a06;
+        --bg-2: #06150d;
+        --accent: #15ff6f;
+        --accent-2: #72ffb2;
+        --text: #c7ffd9;
+        --muted: #5f9e7b;
+        --dial-edge: rgba(21, 255, 111, 0.3);
+        --dial-face: radial-gradient(circle at 30% 30%, rgba(22, 255, 112, 0.2), rgba(3, 10, 6, 0.95));
+        --tick: rgba(21, 255, 111, 0.25);
+        --tick-major: rgba(21, 255, 111, 0.5);
+        --second: #a6ff00;
+        --card-border: rgba(21, 255, 111, 0.25);
+        --card-fill: linear-gradient(160deg, rgba(6, 40, 20, 0.7), rgba(3, 10, 6, 0.6));
+        --card-shadow: 0 20px 50px rgba(0, 20, 10, 0.6);
+        --button-text: #d7ffe6;
+        --button-active-text: #021007;
+      }
+
+      [data-theme="gray"] {
+        --bg: #1f2126;
+        --bg-2: #2b2e35;
+        --accent: #bfc4d2;
+        --accent-2: #8a92a6;
+        --text: #e6e8ee;
+        --muted: #a2a7b4;
+        --dial-edge: rgba(255, 255, 255, 0.15);
+        --dial-face: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.12), rgba(20, 22, 28, 0.9));
+        --tick: rgba(255, 255, 255, 0.25);
+        --tick-major: rgba(255, 255, 255, 0.45);
+        --second: #d6d9e3;
+        --card-border: rgba(255, 255, 255, 0.1);
+        --card-fill: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+        --card-shadow: 0 20px 60px rgba(10, 10, 14, 0.55);
+        --button-text: #f2f4f9;
+        --button-active-text: #0b0f1f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: radial-gradient(1200px 800px at 20% 10%, #1f2450 0%, var(--bg) 45%),
+          radial-gradient(900px 700px at 85% 90%, #18205a 0%, var(--bg-2) 50%);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        letter-spacing: 0.2px;
+      }
+
+      .card {
+        width: min(680px, 92vw);
+        padding: 40px 36px;
+        border-radius: 20px;
+        background: var(--card-fill);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--card-shadow);
+      }
+
+      h1 {
+        margin: 0 0 8px 0;
+        font-weight: 600;
+        font-size: 28px;
+      }
+
+      .subtitle {
+        margin: 0 0 24px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .clock-wrap {
+        display: grid;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .dial {
+        width: min(260px, 48vw);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        position: relative;
+        background: var(--dial-face);
+        border: 1px solid var(--dial-edge);
+        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4), 0 16px 36px rgba(5, 8, 28, 0.5);
+      }
+
+      .dial svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .tick {
+        stroke: var(--tick);
+        stroke-width: 2;
+        stroke-linecap: round;
+      }
+
+      .tick.major {
+        stroke: var(--tick-major);
+        stroke-width: 3;
+      }
+
+      .hand {
+        transform-origin: 50% 50%;
+        transition: transform 120ms linear;
+      }
+
+      .hand.hour {
+        stroke: var(--accent);
+        stroke-width: 6;
+      }
+
+      .hand.minute {
+        stroke: var(--accent-2);
+        stroke-width: 4;
+      }
+
+      .hand.second {
+        stroke: var(--second);
+        stroke-width: 2;
+      }
+
+      .pivot {
+        fill: #f1f2ff;
+      }
+
+      .time {
+        font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: clamp(36px, 8vw, 64px);
+        font-weight: 500;
+        letter-spacing: 6px;
+        padding: 18px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .secondary {
+        margin-top: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .secondary .label {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .secondary .value {
+        font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: clamp(18px, 4.5vw, 28px);
+        font-weight: 500;
+        letter-spacing: 4px;
+      }
+
+      .legend {
+        margin-top: 18px;
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+
+      .dot.accent {
+        background: var(--accent);
+      }
+
+      .dot.accent-2 {
+        background: var(--accent-2);
+      }
+
+      .theme-switch {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 10px 0 18px 0;
+      }
+
+      .theme-switch button {
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--button-text);
+        -webkit-text-fill-color: var(--button-text);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.6px;
+        cursor: pointer;
+        transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      }
+
+      .theme-switch button.active {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: var(--button-active-text);
+        -webkit-text-fill-color: var(--button-active-text);
+        text-shadow: none;
+      }
+
+      [data-theme="light"] .theme-switch button {
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      [data-theme="light"] .theme-switch button.active {
+        background: rgba(0, 0, 0, 0.08);
+      }
+
+      [data-theme="light"] .theme-switch button {
+        text-shadow: none;
+      }
+
+      [data-theme="dark"] .theme-switch button,
+      [data-theme="matrix"] .theme-switch button,
+      [data-theme="gray"] .theme-switch button {
+        background: rgba(0, 0, 0, 0.45) !important;
+        border-color: rgba(255, 255, 255, 0.35) !important;
+        color: #f7f9ff !important;
+        -webkit-text-fill-color: #f7f9ff !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+      }
+
+      [data-theme="dark"] .theme-switch button[data-theme="light"],
+      [data-theme="matrix"] .theme-switch button[data-theme="light"],
+      [data-theme="gray"] .theme-switch button[data-theme="light"] {
+        background: rgba(0, 0, 0, 0.65) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      .theme-switch button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .sound-panel {
+        margin: 14px 0 10px 0;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        background: rgba(255, 255, 255, 0.04);
+        display: grid;
+        gap: 10px;
+      }
+
+      .sound-panel h2 {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+      }
+
+      .sound-options {
+        display: grid;
+        gap: 10px;
+      }
+
+      .sound-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .sound-row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .sound-row select {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        padding: 6px 10px;
+        font-size: 13px;
+        letter-spacing: 0.4px;
+      }
+
+      .muted-label {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .sound-options input[type="checkbox"] {
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+      }
+
+      .dial {
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Senary Time</h1>
+      <p class="subtitle">A full base‑6 clock mapped to the same 24‑hour day.</p>
+      <div class="theme-switch" role="group" aria-label="Theme selector">
+        <button type="button" data-theme="dark" class="active">Dark</button>
+        <button type="button" data-theme="light">Light</button>
+        <button type="button" data-theme="matrix">Matrix</button>
+        <button type="button" data-theme="gray">Gray</button>
+      </div>
+      <div class="sound-panel">
+        <h2>Sound</h2>
+        <div class="sound-options">
+          <div class="sound-row">
+            <label>
+              <input type="checkbox" id="sound-seconds" />
+              Seconds
+            </label>
+            <select id="sound-seconds-tone">
+              <option value="tick">Tick</option>
+              <option value="click">Click</option>
+              <option value="beep">Beep</option>
+              <option value="bell">Bell</option>
+            </select>
+            <span class="muted-label">Every second</span>
+          </div>
+          <div class="sound-row">
+            <label>
+              <input type="checkbox" id="sound-minutes" />
+              Minutes
+            </label>
+            <select id="sound-minutes-tone">
+              <option value="bell">Bell</option>
+              <option value="beep">Beep</option>
+              <option value="tick">Tick</option>
+              <option value="chime">Chime</option>
+            </select>
+            <span class="muted-label">Every minute</span>
+          </div>
+          <div class="sound-row">
+            <label>
+              <input type="checkbox" id="sound-hours" />
+              Hours
+            </label>
+            <select id="sound-hours-tone">
+              <option value="chime">Chime</option>
+              <option value="bell">Bell</option>
+              <option value="beep">Beep</option>
+              <option value="tick">Tick</option>
+            </select>
+            <span class="muted-label">Every hour</span>
+          </div>
+        </div>
+      </div>
+      <div class="clock-wrap">
+        <div class="dial" aria-hidden="true">
+          <svg viewBox="0 0 200 200">
+            <g>
+              <line class="tick major" x1="100" y1="16" x2="100" y2="32" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(30 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(60 100 100)" />
+              <line class="tick major" x1="100" y1="16" x2="100" y2="32" transform="rotate(90 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(120 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(150 100 100)" />
+              <line class="tick major" x1="100" y1="16" x2="100" y2="32" transform="rotate(180 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(210 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(240 100 100)" />
+              <line class="tick major" x1="100" y1="16" x2="100" y2="32" transform="rotate(270 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(300 100 100)" />
+              <line class="tick" x1="100" y1="16" x2="100" y2="26" transform="rotate(330 100 100)" />
+            </g>
+            <line id="hand-hour" class="hand hour" x1="100" y1="100" x2="100" y2="55" />
+            <line id="hand-minute" class="hand minute" x1="100" y1="100" x2="100" y2="38" />
+            <line id="hand-second" class="hand second" x1="100" y1="104" x2="100" y2="28" />
+            <circle class="pivot" cx="100" cy="100" r="5" />
+          </svg>
+        </div>
+        <div class="time" id="senary-time">0000:00:00</div>
+        <div class="secondary">
+          <div>
+            <div class="label">Time Left Today</div>
+            <div class="value" id="senary-left">0000:00:00</div>
+          </div>
+          <div>
+            <div class="label">Total Time In A Day</div>
+            <div class="value" id="senary-total">1000:00:00</div>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="dot accent"></span>HHHH (0000–1000, base‑6)</span>
+        <span><span class="dot accent-2"></span>MM (00–55) / SS (00–55)</span>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.58/Tone.js"></script>
+    <script>
+      const timeEl = document.getElementById("senary-time");
+      const leftEl = document.getElementById("senary-left");
+      const totalEl = document.getElementById("senary-total");
+      const hourHand = document.getElementById("hand-hour");
+      const minuteHand = document.getElementById("hand-minute");
+      const secondHand = document.getElementById("hand-second");
+      const themeButtons = document.querySelectorAll(".theme-switch button");
+      const secondsToggle = document.getElementById("sound-seconds");
+      const minutesToggle = document.getElementById("sound-minutes");
+      const hoursToggle = document.getElementById("sound-hours");
+      const secondsTone = document.getElementById("sound-seconds-tone");
+      const minutesTone = document.getElementById("sound-minutes-tone");
+      const hoursTone = document.getElementById("sound-hours-tone");
+
+      const toBase6 = (value, width) => {
+        const base6 = value.toString(6);
+        return base6.padStart(width, "0");
+      };
+
+      const SECONDS_PER_DAY = 24 * 60 * 60;
+      const SENARY_HOURS_PER_DAY = 6 ** 3; // 1000 in base-6
+      const SENARY_MINUTES_PER_HOUR = 6 ** 2; // 36
+      const SENARY_SECONDS_PER_MINUTE = 6 ** 2; // 36
+      const SENARY_TICKS_PER_DAY =
+        SENARY_HOURS_PER_DAY * SENARY_MINUTES_PER_HOUR * SENARY_SECONDS_PER_MINUTE; // 6^7
+      const SENARY_TICKS_PER_HOUR = SENARY_MINUTES_PER_HOUR * SENARY_SECONDS_PER_MINUTE; // 6^4
+      const SENARY_TICKS_PER_MINUTE = SENARY_SECONDS_PER_MINUTE; // 6^2
+
+      const formatSenary = (total, hourWidth) => {
+        const hours = Math.floor(total / SENARY_TICKS_PER_HOUR);
+        const remainder = total % SENARY_TICKS_PER_HOUR;
+        const minutes = Math.floor(remainder / SENARY_TICKS_PER_MINUTE);
+        const seconds = remainder % SENARY_TICKS_PER_MINUTE;
+
+        const h = toBase6(hours, hourWidth);
+        const m = toBase6(minutes, 2);
+        const s = toBase6(seconds, 2);
+
+        return `${h}:${m}:${s}`;
+      };
+
+      const ensureAudioStarted = async () => {
+        if (Tone && Tone.context.state !== "running") {
+          await Tone.start();
+        }
+      };
+
+      const SOUND_PRESETS = {
+        tick: () =>
+          new Tone.MembraneSynth({
+            pitchDecay: 0.02,
+            octaves: 1,
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0 },
+            volume: -12,
+          }).toDestination(),
+        click: () =>
+          new Tone.NoiseSynth({
+            noise: { type: "white" },
+            envelope: { attack: 0.001, decay: 0.06, sustain: 0 },
+            volume: -14,
+          }).toDestination(),
+        beep: () =>
+          new Tone.Synth({
+            oscillator: { type: "square" },
+            envelope: { attack: 0.003, decay: 0.12, sustain: 0 },
+            volume: -10,
+          }).toDestination(),
+        bell: () =>
+          new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.005, decay: 0.25, sustain: 0 },
+            volume: -8,
+          }).toDestination(),
+        chime: () =>
+          new Tone.Synth({
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.5, sustain: 0 },
+            volume: -6,
+          }).toDestination(),
+      };
+
+      const SOUND_NOTES = {
+        seconds: "C6",
+        minutes: "E5",
+        hours: "C4",
+      };
+
+      const SOUND_DURATIONS = {
+        seconds: 0.03,
+        minutes: 0.12,
+        hours: 0.25,
+      };
+
+      const soundState = {
+        seconds: { type: secondsTone.value, synth: null },
+        minutes: { type: minutesTone.value, synth: null },
+        hours: { type: hoursTone.value, synth: null },
+      };
+
+      const buildSynth = (type) => {
+        const factory = SOUND_PRESETS[type] || SOUND_PRESETS.tick;
+        return factory();
+      };
+
+      const setSoundType = (channel, type) => {
+        if (soundState[channel].synth) {
+          soundState[channel].synth.dispose();
+        }
+        soundState[channel].type = type;
+        soundState[channel].synth = buildSynth(type);
+      };
+
+      setSoundType("seconds", secondsTone.value);
+      setSoundType("minutes", minutesTone.value);
+      setSoundType("hours", hoursTone.value);
+
+      let lastHourAngle = 0;
+      let lastMinuteAngle = 0;
+      let lastSecondAngle = 0;
+      let hourTurns = 0;
+      let minuteTurns = 0;
+      let secondTurns = 0;
+      let lastHoursValue = null;
+      let lastMinutesValue = null;
+      let lastSecondsValue = null;
+
+      const smoothRotate = (el, angle, lastAngle, turns) => {
+        if (angle + 5 < lastAngle) {
+          turns += 1;
+        }
+        const next = turns * 360 + angle;
+        el.style.transform = `rotate(${next}deg)`;
+        return { angle, turns };
+      };
+
+      const updateTime = () => {
+        const now = new Date();
+        const midnight = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          0,
+          0,
+          0,
+          0
+        );
+        const secondsSinceMidnight = (now - midnight) / 1000;
+        const dayFraction = secondsSinceMidnight / SECONDS_PER_DAY;
+
+        let senaryTotal = Math.floor(dayFraction * SENARY_TICKS_PER_DAY);
+        if (senaryTotal >= SENARY_TICKS_PER_DAY) {
+          senaryTotal = SENARY_TICKS_PER_DAY - 1;
+        }
+
+        const senaryRemaining = Math.max(0, SENARY_TICKS_PER_DAY - 1 - senaryTotal);
+
+        timeEl.textContent = formatSenary(senaryTotal, 4);
+        leftEl.textContent = formatSenary(senaryRemaining, 4);
+
+        const hours = Math.floor(senaryTotal / SENARY_TICKS_PER_HOUR);
+        const remainder = senaryTotal % SENARY_TICKS_PER_HOUR;
+        const minutes = Math.floor(remainder / SENARY_TICKS_PER_MINUTE);
+        const seconds = remainder % SENARY_TICKS_PER_MINUTE;
+
+        const hourAngle = (hours / SENARY_HOURS_PER_DAY) * 360;
+        const minuteAngle = (minutes / SENARY_MINUTES_PER_HOUR) * 360;
+        const secondAngle = (seconds / SENARY_SECONDS_PER_MINUTE) * 360;
+
+        const hourState = smoothRotate(hourHand, hourAngle, lastHourAngle, hourTurns);
+        const minuteState = smoothRotate(minuteHand, minuteAngle, lastMinuteAngle, minuteTurns);
+        const secondState = smoothRotate(secondHand, secondAngle, lastSecondAngle, secondTurns);
+
+        lastHourAngle = hourState.angle;
+        hourTurns = hourState.turns;
+        lastMinuteAngle = minuteState.angle;
+        minuteTurns = minuteState.turns;
+        lastSecondAngle = secondState.angle;
+        secondTurns = secondState.turns;
+
+        if (lastSecondsValue === null) {
+          lastSecondsValue = seconds;
+          lastMinutesValue = minutes;
+          lastHoursValue = hours;
+          return;
+        }
+
+        if (seconds !== lastSecondsValue && secondsToggle.checked) {
+          soundState.seconds.synth.triggerAttackRelease(
+            SOUND_NOTES.seconds,
+            SOUND_DURATIONS.seconds
+          );
+        }
+        if (minutes !== lastMinutesValue && minutesToggle.checked) {
+          soundState.minutes.synth.triggerAttackRelease(
+            SOUND_NOTES.minutes,
+            SOUND_DURATIONS.minutes
+          );
+        }
+        if (hours !== lastHoursValue && hoursToggle.checked) {
+          soundState.hours.synth.triggerAttackRelease(SOUND_NOTES.hours, SOUND_DURATIONS.hours);
+        }
+
+        lastSecondsValue = seconds;
+        lastMinutesValue = minutes;
+        lastHoursValue = hours;
+      };
+
+      totalEl.textContent = `${toBase6(SENARY_HOURS_PER_DAY, 4)}:00:00`;
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        themeButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.theme === theme);
+        });
+      };
+
+      themeButtons.forEach((button) => {
+        button.addEventListener("click", () => setTheme(button.dataset.theme));
+      });
+
+      [secondsToggle, minutesToggle, hoursToggle].forEach((toggle) => {
+        toggle.addEventListener("change", () => {
+          if (toggle.checked) {
+            ensureAudioStarted();
+          }
+        });
+      });
+
+      secondsTone.addEventListener("change", (event) => {
+        setSoundType("seconds", event.target.value);
+        ensureAudioStarted();
+      });
+      minutesTone.addEventListener("change", (event) => {
+        setSoundType("minutes", event.target.value);
+        ensureAudioStarted();
+      });
+      hoursTone.addEventListener("change", (event) => {
+        setSoundType("hours", event.target.value);
+        ensureAudioStarted();
+      });
+
+      updateTime();
+      setInterval(updateTime, 100);
+    </script>
+  </body>
+</html>
