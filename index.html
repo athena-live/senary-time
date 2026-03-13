@@ -109,6 +109,8 @@
         place-items: center;
         font-family: "Space Grotesk", "Segoe UI", sans-serif;
         letter-spacing: 0.2px;
+        position: relative;
+        overflow: hidden;
       }
 
       .card {
@@ -118,6 +120,99 @@
         background: var(--card-fill);
         border: 1px solid var(--card-border);
         box-shadow: var(--card-shadow);
+        position: relative;
+        z-index: 2;
+      }
+
+      .matrix-rain {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 220ms ease;
+        z-index: 0;
+      }
+
+      .matrix-rain::before,
+      .matrix-rain::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+      }
+
+      .matrix-rain::before {
+        background:
+          radial-gradient(circle at 50% 20%, rgba(21, 255, 111, 0.12), transparent 45%),
+          linear-gradient(180deg, rgba(2, 18, 8, 0.05), rgba(2, 18, 8, 0.7));
+      }
+
+      .matrix-rain::after {
+        background: repeating-linear-gradient(
+          180deg,
+          rgba(114, 255, 178, 0.08) 0 1px,
+          transparent 1px 5px
+        );
+        mix-blend-mode: screen;
+        opacity: 0.4;
+      }
+
+      .matrix-column {
+        position: absolute;
+        top: -120%;
+        width: 2.4ch;
+        color: rgba(114, 255, 178, 0.42);
+        font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: clamp(12px, 1.6vw, 16px);
+        line-height: 1;
+        white-space: pre;
+        text-shadow: 0 0 10px rgba(21, 255, 111, 0.4), 0 0 22px rgba(21, 255, 111, 0.18);
+        animation: matrix-fall linear infinite;
+        will-change: transform;
+      }
+
+      .matrix-column .head {
+        color: #d8ffe8;
+      }
+
+      @keyframes matrix-fall {
+        from {
+          transform: translate3d(0, -10%, 0);
+        }
+        to {
+          transform: translate3d(0, 230%, 0);
+        }
+      }
+
+      [data-theme="matrix"] body {
+        background:
+          radial-gradient(circle at 50% 18%, rgba(25, 255, 126, 0.18), transparent 34%),
+          radial-gradient(circle at 18% 15%, rgba(18, 74, 42, 0.5), transparent 42%),
+          radial-gradient(circle at 82% 90%, rgba(12, 54, 29, 0.55), transparent 40%),
+          linear-gradient(180deg, #020703 0%, #03110a 48%, #020603 100%);
+      }
+
+      [data-theme="matrix"] .matrix-rain {
+        opacity: 1;
+      }
+
+      [data-theme="matrix"] .card {
+        background:
+          linear-gradient(180deg, rgba(5, 28, 14, 0.88), rgba(3, 10, 6, 0.7)),
+          radial-gradient(circle at top, rgba(64, 255, 153, 0.08), transparent 60%);
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(114, 255, 178, 0.08),
+          0 0 32px rgba(21, 255, 111, 0.12);
+        backdrop-filter: blur(8px);
+      }
+
+      [data-theme="matrix"] .dial {
+        box-shadow:
+          inset 0 0 34px rgba(0, 0, 0, 0.55),
+          0 0 30px rgba(21, 255, 111, 0.12),
+          0 18px 38px rgba(0, 0, 0, 0.5);
       }
 
       h1 {
@@ -576,6 +671,7 @@
     </style>
   </head>
   <body>
+    <div class="matrix-rain" id="matrix-rain" aria-hidden="true"></div>
     <div class="card">
       <h1>Senary Time</h1>
       <p class="subtitle">A full base‑6 clock mapped to the same 24‑hour day.</p>
@@ -757,6 +853,7 @@
       const workInput = document.getElementById("work-input");
       const workApply = document.getElementById("work-apply");
       const workText = document.getElementById("work-text");
+      const matrixRain = document.getElementById("matrix-rain");
 
       const toBase6 = (value, width) => {
         const base6 = value.toString(6);
@@ -783,6 +880,35 @@
         const s = toBase6(seconds, 2);
 
         return `${h}:${m}:${s}`;
+      };
+
+      const randomBinaryColumn = (length) => {
+        return Array.from({ length }, (_, index) => {
+          const bit = Math.random() > 0.5 ? "1" : "0";
+          return index === 0 ? `<span class="head">${bit}</span>` : bit;
+        }).join("\n");
+      };
+
+      const renderMatrixRain = () => {
+        const width = window.innerWidth;
+        const columns = Math.max(12, Math.floor(width / 52));
+        matrixRain.innerHTML = "";
+
+        for (let index = 0; index < columns; index += 1) {
+          const column = document.createElement("div");
+          const left = (index / columns) * 100;
+          const duration = 12 + Math.random() * 8;
+          const delay = -Math.random() * duration;
+          const length = 18 + Math.floor(Math.random() * 20);
+
+          column.className = "matrix-column";
+          column.style.left = `${left}%`;
+          column.style.animationDuration = `${duration}s`;
+          column.style.animationDelay = `${delay}s`;
+          column.style.opacity = (0.2 + Math.random() * 0.45).toFixed(2);
+          column.innerHTML = randomBinaryColumn(length);
+          matrixRain.appendChild(column);
+        }
       };
 
       const ensureAudioStarted = async () => {
@@ -999,6 +1125,8 @@
         button.addEventListener("click", () => setTheme(button.dataset.theme));
       });
 
+      window.addEventListener("resize", renderMatrixRain);
+
       soundToggle.addEventListener("click", () => {
         const isCollapsed = soundPanel.classList.toggle("collapsed");
         soundToggle.setAttribute("aria-expanded", String(!isCollapsed));
@@ -1060,8 +1188,10 @@
 
       updateTime();
       updateRollingYear();
+      renderMatrixRain();
       setInterval(updateTime, 100);
       setInterval(updateRollingYear, 60 * 1000);
+      setInterval(renderMatrixRain, 7000);
     </script>
   </body>
 </html>
