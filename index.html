@@ -132,6 +132,7 @@
         opacity: 0;
         transition: opacity 220ms ease;
         z-index: 1;
+        filter: saturate(1.15);
       }
 
       .matrix-rain::before,
@@ -143,45 +144,59 @@
 
       .matrix-rain::before {
         background:
-          radial-gradient(circle at 50% 20%, rgba(21, 255, 111, 0.12), transparent 45%),
-          linear-gradient(180deg, rgba(2, 18, 8, 0.05), rgba(2, 18, 8, 0.7));
+          radial-gradient(circle at 50% 18%, rgba(21, 255, 111, 0.18), transparent 30%),
+          radial-gradient(circle at 15% 8%, rgba(21, 255, 111, 0.1), transparent 28%),
+          radial-gradient(circle at 85% 92%, rgba(114, 255, 178, 0.08), transparent 32%),
+          linear-gradient(180deg, rgba(2, 12, 6, 0.18), rgba(1, 8, 4, 0.86));
       }
 
       .matrix-rain::after {
-        background: repeating-linear-gradient(
-          180deg,
-          rgba(114, 255, 178, 0.08) 0 1px,
-          transparent 1px 5px
-        );
+        background:
+          repeating-linear-gradient(
+            180deg,
+            rgba(114, 255, 178, 0.08) 0 1px,
+            transparent 1px 4px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            rgba(114, 255, 178, 0.05) 0 1px,
+            transparent 1px 56px
+          );
         mix-blend-mode: screen;
-        opacity: 0.4;
+        opacity: 0.5;
       }
 
       .matrix-column {
         position: absolute;
-        top: -120%;
-        width: 2.4ch;
-        color: rgba(114, 255, 178, 0.72);
+        top: -220vh;
+        width: 1.4ch;
+        color: rgba(114, 255, 178, 0.82);
         font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
           monospace;
-        font-size: clamp(13px, 1.8vw, 18px);
-        line-height: 1;
+        font-size: clamp(13px, 1.5vw, 18px);
+        line-height: 0.9;
         white-space: pre;
-        text-shadow: 0 0 12px rgba(21, 255, 111, 0.55), 0 0 28px rgba(21, 255, 111, 0.28);
+        text-shadow: 0 0 10px rgba(21, 255, 111, 0.75), 0 0 24px rgba(21, 255, 111, 0.32);
         animation: matrix-fall linear infinite;
         will-change: transform;
+        opacity: 0.9;
       }
 
       .matrix-column .head {
-        color: #d8ffe8;
+        color: #f2fff7;
+        text-shadow: 0 0 16px rgba(223, 255, 236, 0.95), 0 0 30px rgba(95, 255, 173, 0.5);
+      }
+
+      .matrix-column .hot {
+        color: #b8ffd2;
       }
 
       @keyframes matrix-fall {
         from {
-          transform: translate3d(0, -10%, 0);
+          transform: translate3d(0, 0, 0);
         }
         to {
-          transform: translate3d(0, 230%, 0);
+          transform: translate3d(0, 440vh, 0);
         }
       }
 
@@ -199,13 +214,13 @@
 
       html[data-theme="matrix"] .card {
         background:
-          linear-gradient(180deg, rgba(5, 28, 14, 0.88), rgba(3, 10, 6, 0.7)),
-          radial-gradient(circle at top, rgba(64, 255, 153, 0.08), transparent 60%);
+          linear-gradient(180deg, rgba(2, 14, 7, 0.92), rgba(1, 8, 4, 0.82)),
+          radial-gradient(circle at top, rgba(64, 255, 153, 0.12), transparent 60%);
         box-shadow:
-          0 30px 80px rgba(0, 0, 0, 0.6),
+          0 30px 80px rgba(0, 0, 0, 0.72),
           inset 0 0 0 1px rgba(114, 255, 178, 0.08),
-          0 0 32px rgba(21, 255, 111, 0.12);
-        backdrop-filter: blur(8px);
+          0 0 42px rgba(21, 255, 111, 0.18);
+        backdrop-filter: blur(14px);
       }
 
       html[data-theme="matrix"] .dial {
@@ -885,27 +900,33 @@
       const randomBinaryColumn = (length) => {
         return Array.from({ length }, (_, index) => {
           const bit = Math.random() > 0.5 ? "1" : "0";
-          return index === 0 ? `<span class="head">${bit}</span>` : bit;
+          if (index === 0) {
+            return `<span class="head">${bit}</span>`;
+          }
+          if (index < 5) {
+            return `<span class="hot">${bit}</span>`;
+          }
+          return bit;
         }).join("\n");
       };
 
       const renderMatrixRain = () => {
         const width = window.innerWidth;
-        const columns = Math.max(12, Math.floor(width / 52));
+        const columns = Math.max(24, Math.floor(width / 24));
         matrixRain.innerHTML = "";
 
         for (let index = 0; index < columns; index += 1) {
           const column = document.createElement("div");
-          const left = (index / columns) * 100;
-          const duration = 12 + Math.random() * 8;
+          const left = ((index + Math.random() * 0.4) / columns) * 100;
+          const duration = 8 + Math.random() * 7;
           const delay = -Math.random() * duration;
-          const length = 18 + Math.floor(Math.random() * 20);
+          const length = 40 + Math.floor(Math.random() * 90);
 
           column.className = "matrix-column";
           column.style.left = `${left}%`;
           column.style.animationDuration = `${duration}s`;
           column.style.animationDelay = `${delay}s`;
-          column.style.opacity = (0.2 + Math.random() * 0.45).toFixed(2);
+          column.style.opacity = (0.45 + Math.random() * 0.45).toFixed(2);
           column.innerHTML = randomBinaryColumn(length);
           matrixRain.appendChild(column);
         }
@@ -1191,7 +1212,7 @@
       renderMatrixRain();
       setInterval(updateTime, 100);
       setInterval(updateRollingYear, 60 * 1000);
-      setInterval(renderMatrixRain, 7000);
+      setInterval(renderMatrixRain, 5000);
     </script>
   </body>
 </html>
