@@ -748,6 +748,7 @@
   <body>
     <div class="matrix-rain" id="matrix-rain" aria-hidden="true"></div>
     <div class="card">
+      <div class="matrix-card-rain" id="matrix-card-rain" aria-hidden="true"></div>
       <h1>Senary Time</h1>
       <p class="subtitle">A full base‑6 clock mapped to the same 24‑hour day.</p>
       <div class="theme-switch" role="group" aria-label="Theme selector">
@@ -929,6 +930,7 @@
       const workApply = document.getElementById("work-apply");
       const workText = document.getElementById("work-text");
       const matrixRain = document.getElementById("matrix-rain");
+      const matrixCardRain = document.getElementById("matrix-card-rain");
 
       const toBase6 = (value, width) => {
         const base6 = value.toString(6);
@@ -970,17 +972,16 @@
         }).join("\n");
       };
 
-      const renderMatrixRain = () => {
-        const width = window.innerWidth;
-        const columns = Math.max(24, Math.floor(width / 24));
-        matrixRain.innerHTML = "";
+      const renderBinaryRain = (container, width, minColumns, columnWidth, minLength, maxLength) => {
+        const columns = Math.max(minColumns, Math.floor(width / columnWidth));
+        container.innerHTML = "";
 
         for (let index = 0; index < columns; index += 1) {
           const column = document.createElement("div");
           const left = ((index + Math.random() * 0.4) / columns) * 100;
           const duration = 8 + Math.random() * 7;
           const delay = -Math.random() * duration;
-          const length = 40 + Math.floor(Math.random() * 90);
+          const length = minLength + Math.floor(Math.random() * (maxLength - minLength + 1));
 
           column.className = "matrix-column";
           column.style.left = `${left}%`;
@@ -988,8 +989,13 @@
           column.style.animationDelay = `${delay}s`;
           column.style.opacity = (0.45 + Math.random() * 0.45).toFixed(2);
           column.innerHTML = randomBinaryColumn(length);
-          matrixRain.appendChild(column);
+          container.appendChild(column);
         }
+      };
+
+      const renderMatrixRain = () => {
+        renderBinaryRain(matrixRain, window.innerWidth, 24, 24, 40, 130);
+        renderBinaryRain(matrixCardRain, matrixCardRain.clientWidth || 680, 16, 22, 22, 58);
       };
 
       const ensureAudioStarted = async () => {
